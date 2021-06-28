@@ -4,7 +4,16 @@
 #include <File.au3>
 #RequireAdmin
 
-HotKeySet("{Esc}", "_Exit")
+HotKeySet("{ESC}", _Exit)
+Global $_baseDir = @ScriptDir & "\Images\"
+
+Global $windowX = 1875
+Global $windowY = 239
+Global $windowWidth = 661
+Global $windowHeight = 1107
+
+Work()
+
 Func _Exit()
 	Exit 0
 EndFunc   ;==>_Exit
@@ -18,44 +27,19 @@ Func _MyDebug($sMessage, $iError = @error, $iExtended = @extended)
 EndFunc   ;==>_MyDebug
 
 Func _resize()
-    $hWnd = WinGetHandle("BlueStacks")
-;~   $pos = WinGetPos($hWnd)
-;~	ConsoleWrite("Pos: " & $pos)
-;~	ConsoleWrite(" X: " & $pos[0])
-;~	ConsoleWrite(" Y: " & $pos[1])
-    WinMove($hWnd, '', 1337, 132, 661, 1107)
-;~  _WinSetClientPos($hWnd, "", 800, 600, $pos[0], $pos[1])
-;~  _WinAPI_MoveWindow($hWnd, $pos[0], $pos[1], 800, 600)
-;~  _WinAPI_SetWindowPos($hWnd, $HWND_NOTOPMOST, $pos[0], $pos[1], 800, 600, $SWP_NOMOVE)
-    Sleep(500)
-EndFunc
-
-Global Enum $kingsTower, $combined, $campaign
-Global $runType = $campaign
-
-Global $_baseDir = @ScriptDir & "\Images\"
-Global $_kingsTower = $_baseDir & "KingsTower\"
-Global $_combined = $_baseDir & "Combined\"
-
-Work()
+	$hWnd = WinGetHandle("BlueStacks")
+	WinMove($hWnd, '', $windowX, $windowY, $windowWidth, $windowHeight)
+	Sleep(500)
+EndFunc   ;==>_resize
 
 Func Work()
-	Local $dir
 
-	Switch $runType
-		Case $campaign
-			$dir = $_baseDir
-		Case $kingsTower
-			$dir = $_kingsTower
-		Case $combined
-			$dir = $_combined
-		Case Else
-			$dir = $_baseDir
-	EndSwitch
+	Local $images = _FileListToArray($_baseDir, "*")
 
-	#ConsoleWrite("Dir: " & $dir)
-
-	Local $images = _FileListToArray($dir, "*")
+	Local $searchAreaX	= $windowX
+	Local $searchAreaY	= $windowY
+	Local $searchAreaX1	= $windowX + $windowWidth
+	Local $searchAreaY1	= $windowY + $windowHeight
 
 	While 1
 		ToolTip('(Press ESC to EXIT) Running ...', 1, 1)
@@ -63,9 +47,10 @@ Func Work()
 		Local $i, $result, $x, $y, $name
 
 		For $i = 1 To $images[0]
-			$result = _ImageSearch($dir & $images[$i])
 
-			#ConsoleWrite($images[$i])
+			Local $imagePath = $_baseDir & $images[$i]
+
+			$result = _ImageSearch_Area($imagePath, $searchAreaX, $searchAreaY, $searchAreaX1, $searchAreaY1, 5, True)
 
 			If $result[0] = 1 Then
 
@@ -74,6 +59,7 @@ Func Work()
 				$name = $images[$i]
 
 				If StringInStr($name, "Offset_") Then
+
 					If StringInStr($name, "Right_") Then
 						$x = $x + 250
 					Else
@@ -91,6 +77,7 @@ Func Work()
 					If StringInStr($name, "Left_") Then
 						$x = $x - 220
 					EndIf
+
 				EndIf
 
 				_resize()
@@ -98,6 +85,8 @@ Func Work()
 
 				Sleep(1000)
 			EndIf
+
+			Sleep(100)
 		Next
 
 		Sleep(1000)
